@@ -1,50 +1,51 @@
 import express from 'express'
 import cors from 'cors'
-
+import { asaasCreateCustomer, fetchAsaas, qrcodedynamic, qrcodestatic } from './asaas';
 const app = express();
-app.use(cors());
+app.use(cors({origin: "http://localhost:5173"}));
 
 
 interface Produto{
-  preco: number,
   name: string,
-  id: string
+  preco: number,
 }
-
-//o que tenho que fazer: pegar qnt de cookies (tamanho do array) e atualizar aquela lista lá
-
-const produtos: Produto[] = [
-
-  {preco: 30, name: "Chocolate Brasileiro",  id: '1'},
-  {preco: 20, name: "Chocolate Belga", id: '2'},
-  {preco: 40, name: "Chocolate Frances", id: '3'},
-  {preco: 50, name: "Chocolate Judáico",id: '4'},
-  {preco: 40, name: "Chocolate Ganês", id: '5'},
-  {preco: 40, name: "Chocolate Chines", id: '6'},
-  {preco: 40, name: "Chocolate Holandes Voador", id: '7'},
-  {preco: 40, name: "Brisadeiro", id: '8'},
-  {preco: 40, name: "Brisadeiro de cocaina", id: '9'},
-  {preco: 40, name: "Brisadeiro de dapdoaspdok", id: '10'}
-
-];
+let databasehorrivel = new Map<string, Produto>([
+  ["cookieirado12309iawd", {
+    name: "Cookie Irado",
+    preco: 502309,
+  }],
+  ["outrocookie", {
+    name: "Cookie Outro",
+    preco: 10 
+  }]
+])
 
 app.get('/home', (req,res) => {
-    res.json(produtos)
+    res.json(databasehorrivel)
 }
 )
 
 
 app.get('/produto/:id', (req, res) => {
-
-    const id_do_link = req.params.id;
-    for (const element of produtos) {
-      if (element.id === id_do_link) {
-        res.json(element);
-        return;
-    }
-  }
+    // id = req.query.id
+    const id = req.params.id
+    console.log("id", id);
+    res.json({produto: databasehorrivel.get(id)})
 
 });
+let _customer: string
+(async () => {
+   _customer = process.env._CUSTOMER ?? ""//await asaasCreateCustomer()
+})()
+app.post('/pedido/:idProduto', async (req, res) => {
+  const idProduto = req.params.idProduto
+  const produto = databasehorrivel.get(idProduto)
+  if (!produto){
+    return res.sendStatus(500).send("produto não existe")
+  }
+  const pix = await qrcodedynamic(_customer, produto.preco)
+  return res.json({pix})
+})
 
 app.listen(3000, () => {
   console.log(`Servidor rodando em http://localhost:${3000}`);
