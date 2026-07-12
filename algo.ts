@@ -1,34 +1,15 @@
 import express from 'express'
 import cors from 'cors'
-
+import { asaasCreateCustomer, fetchAsaas, qrcodedynamic, qrcodestatic } from './asaas';
 const app = express();
 app.use(cors({origin: "http://localhost:5173"}));
 
-async function fetchAsaas(url: string, init?: RequestInit | undefined){
-  if (!process.env.ASAAS_SB_ACCESS_TOKEN){
-    console.log(process.env.ASAAS_SB_ACCESS_TOKEN)
-    throw new Error("environment variable ASAAS_ACCESS_TOKEN not found")
-  }
-  return await fetch(`https://api-sandbox.asaas.com/v3/${url}`, { 
-    headers: {
-      "Content-Type": "application/json",
-      "accept": "application/json",
-      "User-Agent": "cuquis",
-      "access_token": process.env.ASAAS_SB_ACCESS_TOKEN,
-    },
-    ...init,
-  }) 
 
+interface Produto{
+  name: string,
+  preco: number,
 }
-async function qrcode(){
-  const res = await fetchAsaas("pix/qrCodes/static", {method: 'POST'})
-  console.log(res)
-  const data = await res.json()
-  console.log(data)
-  return data
-}
-
-let databasehorrivel = new Map<string, any>([
+let databasehorrivel = new Map<string, Produto>([
   ["cookieirado12309iawd", {
     name: "Cookie Irado",
     preco: 502309,
@@ -47,6 +28,19 @@ app.get('/produto/:id', (req, res) => {
     res.json({produto: databasehorrivel.get(id)})
 
 });
+let _customer: string
+(async () => {
+   _customer = process.env._CUSTOMER ?? ""//await asaasCreateCustomer()
+})()
+app.post('/pedido/:idProduto', async (req, res) => {
+  const idProduto = req.params.idProduto
+  const produto = databasehorrivel.get(idProduto)
+  if (!produto){
+    return res.sendStatus(500).send("produto não existe")
+  }
+  const pix = await qrcodedynamic(_customer, produto.preco)
+  return res.json({pix})
+})
 
 app.listen(3000, () => {
   console.log(`Servidor rodando em http://localhost:${3000}`);
