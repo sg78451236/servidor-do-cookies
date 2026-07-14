@@ -48,12 +48,15 @@ export async function qrcodedynamic(idCustomer: string, value: number){
       "customer": idCustomer,
       "billingType": "PIX",
       "value": value,
-      "dueDate": "2026-07-12",
+      "dueDate": new Date().toISOString().split('T')[0],
     })
   })
   console.log(res)
   const data = await res.json()
-  console.log(data)
+  if (!res.ok){
+    console.log(data)
+    throw new Error(data)
+  }
 
   console.log("GET QRCODE")
   const r = await fetchAsaas(`payments/${data.id}/pixQrCode`, {
@@ -61,6 +64,9 @@ export async function qrcodedynamic(idCustomer: string, value: number){
   })  
   console.log(r)
   const d = await r.json()
-  console.log(d)
+  if (!r.ok){
+    console.log(d)
+    throw new Error(d)
+  }
   return d
 }
