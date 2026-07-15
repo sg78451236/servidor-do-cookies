@@ -6,7 +6,7 @@ const app = express();
 app.use(cors({origin: "http://localhost:5173"}));
 app.use(express.json())
 
-// FIXME: não ta identificando o pedido certo, só pega o primeiro da lista (não da pra pagar outro pedido alem do primeiro)
+// FIXME: Não ta identificando o pedido certo, só pega o primeiro da lista (não da pra pagar outro pedido alem do primeiro)
 interface DTOProduto{
   name: string,
   preco: number,
@@ -89,14 +89,28 @@ function pushPedido(pessoa: string, produtos: DTOProduto[]){
   let pedidoslist = getPedidoList(pessoa)
   pedidoslist.push({pessoa: {id: pessoa, nome: "teste"}, produtos: produtos})
 }
+app.get("/pedido/:idPessoa", async (req, res) => {
+  const pessoa: string = req.params.idPessoa
+  try{
+    let pedidos = getPedidoList(pessoa)
+    return res.json({pedidos: pedidos.map((p) => p.produtos)})
+  } catch (e){
+    return res.sendStatus(400).json({error: "nenhum pedido encontrado"})
+  }
+
+
+})
 app.post('/pedido', async (req, res) => {
   console.log("post pedido body", req.body)
   const produtos: string[] = req.body.produtos
   const pessoa: string = req.body.pessoa
-  
+
   const produtosreais: DTOProduto[] = []
   let valortotal = 0
 
+  if (produtos.length == 0){
+    return res.sendStatus(400).json({error: "um pedido precisa ter no mínimo 1 produto"})
+  }
   // verificar se cada produto existe na DB
   produtos.forEach((v) => {
     let produto = databasehorrivel.get(v)
@@ -130,7 +144,7 @@ app.patch("/pedido/pagar", async (req, res) => {
   }
   if (!pedido){
     console.log("not pedido")
-    return res.json({msg: "pedido não encontrado"})
+    return res.sendStatus(500).json({msg: "pedido não encontrado"})
   }
   pedido.produtos.forEach((v) => {
     valortotal += v.preco
@@ -138,11 +152,11 @@ app.patch("/pedido/pagar", async (req, res) => {
   let pix;
   try{
     pix = await qrcodedynamic(_customer, valortotal)
+    return res.json({pix})
   } catch (e){
     console.log(e)
     return res.sendStatus(500).json({error: e})
   }
-  return res.json({pix})
 })
 
 app.listen(3000, () => {
