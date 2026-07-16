@@ -2,8 +2,9 @@ import express from 'express'
 import cors from 'cors'
 import { qrcodedynamic } from './asaas.js';
 import type { DTOProduto } from './dto.js';
-import { handlerError, handlerUser, notFound } from './middlewares.js';
-import { dbPedidos, dbProdutos, getPedidoList} from './db.js';
+import { errorPostgres, handlerError, handlerUser, notFound } from './middlewares.js';
+import { getPedidosByUserid, createPedido, supabase, produtoDbToDTO } from './db.js';
+
 
 //import { asaasCreateCustomer, fetchAsaas, qrcodedynamic, qrcodestatic } from './asaas';
 const app = express();
@@ -16,76 +17,61 @@ let _customer: string
   _customer = process.env._CUSTOMER ?? ""//await asaasCreateCustomer()
 })()
 
-function getPedidoCurrent(pessoa: string) {
-  let lista = getPedidoList(pessoa)
-  if (!lista) {
-    return notFound("lista de pedidos não existe")
-  }
-  return lista[0]
-}
-const createPedido = (userId: string, produtos: DTOProduto[]) => {
-  const pedidolist = getPedidoList(userId)
-  if (!pedidolist) {
-    throw new Error("lista de pedidos não existe")
-  }
-
-  pedidolist.push({ idUser: userId, produtos: produtos })
+async function getPedidoCurrent(pessoa: string) {
+  let pedidos = await getPedidosByUserid(pessoa)
+  return pedidos[0]
 
 }
-const validateProdutos = (produtosId: string[]): DTOProduto[] => {
-  const resultProdutos: DTOProduto[] = []
+const validateProdutos = async (produtosId: string[]): Promise<DTOProduto[]> => {
+  let resultProdutos: DTOProduto[] = []
 
   // verificar se cada produto existe na DB
-  produtosId.forEach((v) => {
-    let produto = dbProdutos.get(v)
-    if (!produto) {
-      throw new Error("produto não existe")
-    }
-    let p = { ...produto, id: v }
-    resultProdutos.push(p)
-  })
+  for(const v of produtosId){
+    const {data, error} = await supabase.from('Cookies').select().eq("id", v)
+    if (error) return errorPostgres(error);
+    let produto: DTOProduto = produtoDbToDTO(data[0])
+    
+    resultProdutos.push(produto)
+
+  }
   return resultProdutos
 
 }
-app.get('/home', (req: any, res: any) => {
-  console.log(dbProdutos)
-  const produtos: DTOProduto[] = Array.from(dbProdutos).map((v) => ({id: v[0], ...v[1]})) 
+app.get('/home', async (req, res) => {
+  const { data, error } = await supabase.from('Cookies').select('*')
+  console.log(data)
+  if (error) return errorPostgres(error);
+  const produtos: DTOProduto[] = data.map(v => produtoDbToDTO(v))//Array.from(dbProdutos).map((v) => ({id: v[0], ...v[1]})) 
   res.json({ produtos: produtos })
 })
 
 
-app.get('/produto/:id', (req: any, res: any) => {
+app.get('/produto/:id', async (req: any, res: any) => {
   // id = req.query.id
   const id = req.params.id
+  const { data, error } = await supabase.from('Cookies').select().eq('id', id)
+  console.log(data)
+  if (error) return errorPostgres(error);
+  if (data.length == 0) return res.json({produto: null});
   console.log("id", id);
-  const produto = dbProdutos.get(id)
+  const produto: DTOProduto = produtoDbToDTO(data[0]) 
   if (!produto){
     return notFound("produto não foi encontrado")
   }
-  res.json({ produto: { ...produto, id: id } })
+  res.json({ produto: produto })
 
 });
 
 app.get('/pedido', handlerUser, async (req, res) => {
-  const meuspedidos = dbPedidos.get(req.user.id)
-  if (!meuspedidos) {
-    return res.json({pedidos: []})
-  }
+  console.log("pedido user -", req.user.id, "-")
+  const meuspedidos = await getPedidosByUserid(req.user.id) 
+  console.log("pedidos", meuspedidos)
   if (meuspedidos.length > 1) {
     throw new Error("mais de 1 pedido encontrado")
   }
   return res.json({pedidos: meuspedidos.map((v) => v.produtos)})
 })
 
-app.get("/pedido", handlerUser, async (req, res) => {
-  let pedidos = getPedidoList(req.user.id)
-  if (!pedidos) {
-    return notFound("lista de pedidos não existe")
-  }
-  return res.json({ pedidos: pedidos.map((p) => p.produtos) })
-
-
-})
 app.post('/pedido', handlerUser, async (req, res) => {
   console.log("post pedido body", req.body)
   const produtosId: string[] = req.body.produtos
@@ -93,16 +79,16 @@ app.post('/pedido', handlerUser, async (req, res) => {
   if (produtosId.length == 0) {
     throw new Error("um pedido precisa ter no mínimo 1 produto")
   }
-  const produtos: DTOProduto[] = validateProdutos(produtosId)
-
-  createPedido(req.user.id, produtos)
-
+  const produtos: DTOProduto[] = await validateProdutos(produtosId)
+  console.log("post pedido produtos", produtos)
+  let pedido = createPedido({idUser: req.user.id, produtos: produtos})
+  return res.json({pedido: pedido})
 })
 app.patch("/pedido/pagar", handlerUser, async (req, res) => {
   console.log("patch pedido body", req.body)
   // FIXME: acho q é importante verificar se o pedido atual do usuario é iguao ao da database
 
-  let pedido = getPedidoCurrent(req.user.id)
+  let pedido = await getPedidoCurrent(req.user.id)
   if (!pedido){
     return notFound("pedido não foi encontrado")
   }

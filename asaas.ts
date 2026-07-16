@@ -1,7 +1,6 @@
 
 export async function fetchAsaas(url: string, init?: RequestInit | undefined){
   if (!process.env.ASAAS_SB_ACCESS_TOKEN){
-    console.log(process.env.ASAAS_SB_ACCESS_TOKEN)
     throw new Error("environment variable ASAAS_ACCESS_TOKEN not found")
   }
   return await fetch(`https://api-sandbox.asaas.com/v3/${url}`, { 
@@ -23,9 +22,7 @@ export async function qrcodestatic(){
       "expirationSeconds": 60*30 // 30min
     })
   })
-  console.log(res)
   const data = await res.json()
-  console.log(data)
   return data
 }
 export async function asaasCreateCustomer(){
@@ -36,9 +33,7 @@ export async function asaasCreateCustomer(){
       cpfCnpj: process.env._CPF
     })
   })
-  console.log(res)
   const data = await res.json()
-  console.log(data)
   return data
 }
 export async function qrcodedynamic(idCustomer: string, value: number){
@@ -51,21 +46,16 @@ export async function qrcodedynamic(idCustomer: string, value: number){
       "dueDate": new Date().toISOString().split('T')[0],
     })
   })
-  console.log(res)
   const data = await res.json()
   if (!res.ok){
-    console.log(data)
     throw new Error(data)
   }
 
-  console.log("GET QRCODE")
   const r = await fetchAsaas(`payments/${data.id}/pixQrCode`, {
     method: 'GET',
   })  
-  console.log(r)
   const d = await r.json()
   if (!r.ok){
-    console.log(d)
     throw new Error(d)
   }
   return d

@@ -1,3 +1,4 @@
+import type { PostgrestError } from "@supabase/supabase-js";
 import type { NextFunction, Request, Response, ErrorRequestHandler, RequestHandler} from "express";
 
 // ??? magica pro typescript aceitar modificar req
@@ -21,9 +22,13 @@ export const notFound = (msg: string) => {
   throw err
 }
 
+export const errorPostgres = (err: PostgrestError) =>{
+  const error = new Error(err.message)
+  error.status = 500
+  throw error
+}
 export const handlerUser: RequestHandler = (req, res, next) => {
 
-  console.log(req.headers)
   const auth = req.headers.authorization
   if (auth === undefined){
     return res.status(401).json({error: "token de usuário não informado"})
@@ -36,7 +41,6 @@ export const handlerUser: RequestHandler = (req, res, next) => {
 
 
 export const handlerError: ErrorRequestHandler = (error: Error, req, res, next) => {
-  console.log("- middleware error")
   
   console.log("Error", error)
 

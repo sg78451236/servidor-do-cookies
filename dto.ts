@@ -4,3 +4,7 @@ export interface DTOProduto{
   preco: number,
   id: string,
 }
+export interface DTOPedido {
+  idUser: string,
+  produtos: DTOProduto[]
+}
