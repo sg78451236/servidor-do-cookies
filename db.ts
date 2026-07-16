@@ -12,7 +12,7 @@ export let dbPedidos = new Map<string, DTOPedido[]>()
 
 
 export const produtoDbToDTO = (produto: any): DTOProduto => {
-  const result: DTOProduto = {id: produto.id, name: produto.nome, preco: produto.preco}
+  const result: DTOProduto = {id: produto.id, name: produto.nome, preco: produto.preco, image: produto.image}
   return result
 }
 export const pedidoDbToDTO = (pedido: any): DTOPedido => {

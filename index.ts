@@ -39,7 +39,6 @@ const validateProdutos = async (produtosId: string[]): Promise<DTOProduto[]> => 
 }
 app.get('/home', async (req, res) => {
   const { data, error } = await supabase.from('Cookies').select('*')
-  console.log(data)
   if (error) return errorPostgres(error);
   const produtos: DTOProduto[] = data.map(v => produtoDbToDTO(v))//Array.from(dbProdutos).map((v) => ({id: v[0], ...v[1]})) 
   res.json({ produtos: produtos })
@@ -50,10 +49,8 @@ app.get('/produto/:id', async (req: any, res: any) => {
   // id = req.query.id
   const id = req.params.id
   const { data, error } = await supabase.from('Cookies').select().eq('id', id)
-  console.log(data)
   if (error) return errorPostgres(error);
   if (data.length == 0) return res.json({produto: null});
-  console.log("id", id);
   const produto: DTOProduto = produtoDbToDTO(data[0]) 
   if (!produto){
     return notFound("produto não foi encontrado")
@@ -63,9 +60,7 @@ app.get('/produto/:id', async (req: any, res: any) => {
 });
 
 app.get('/pedido', handlerUser, async (req, res) => {
-  console.log("pedido user -", req.user.id, "-")
   const meuspedidos = await getPedidosByUserid(req.user.id) 
-  console.log("pedidos", meuspedidos)
   if (meuspedidos.length > 1) {
     throw new Error("mais de 1 pedido encontrado")
   }
@@ -73,19 +68,16 @@ app.get('/pedido', handlerUser, async (req, res) => {
 })
 
 app.post('/pedido', handlerUser, async (req, res) => {
-  console.log("post pedido body", req.body)
   const produtosId: string[] = req.body.produtos
 
   if (produtosId.length == 0) {
     throw new Error("um pedido precisa ter no mínimo 1 produto")
   }
   const produtos: DTOProduto[] = await validateProdutos(produtosId)
-  console.log("post pedido produtos", produtos)
   let pedido = createPedido({idUser: req.user.id, produtos: produtos})
   return res.json({pedido: pedido})
 })
 app.patch("/pedido/pagar", handlerUser, async (req, res) => {
-  console.log("patch pedido body", req.body)
   // FIXME: acho q é importante verificar se o pedido atual do usuario é iguao ao da database
 
   let pedido = await getPedidoCurrent(req.user.id)
