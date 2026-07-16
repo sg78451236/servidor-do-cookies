@@ -37,6 +37,7 @@ const { data, error } = await supabase.from('Cookies').select('*')
 if (error) {
   console.error("Supabase Error:", error);
 } else {
+  
   console.log(data);
 }
 

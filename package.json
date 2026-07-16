@@ -1,8 +1,14 @@
 {
+<<<<<<< HEAD
   "name": "Servidor",
   "version": "1.0.0",
   "type": "module",
 
+=======
+  "scripts": {
+    "dev": "npx tsc && node --env-file=.env dist/index.js"
+  },
+>>>>>>> 1c2dbc65abb23de217c8512f35ea9a0660069b61
   "dependencies": {
     "@supabase/server": "^1.4.0",
     "@supabase/supabase-js": "^2.110.6",
