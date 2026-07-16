@@ -3,7 +3,6 @@ import cors from 'cors'
 import { createClient } from '@supabase/supabase-js';
 //import { asaasCreateCustomer, fetchAsaas, qrcodedynamic, qrcodestatic } from './asaas';
 // import.meta.resolve(.env)
-import 'dotenv/config'
 const app = express();
 app.use(cors({origin: "http://localhost:5173"}));
 
@@ -33,24 +32,25 @@ interface Produto{
 // ])
 
 //const { data, error } = await supabase.from('Cookies').select().eq('id', id) //json com tudo fazer map q o id seja igual
-const { data, error } = await supabase.from('Cookies').select('*')
-if (error) {
-  console.error("Supabase Error:", error);
-} else {
-  
-  console.log(data);
-}
 
 
 
-app.get('/home', (req:any,res:any) => {
+
+app.get('/home', async (req,res) => {
+  const { data, error } = await supabase.from('Cookies').select('*')
+  if (error) {
+    console.error("Supabase Error:", error);
+  } else {
+    
+    console.log(data);
+  }
     console.log(data)
     res.json(data)
 }
 )
 
 
-app.get('/produto/:id', async (req:any, res:any) => {
+app.get('/produto/:id', async (req, res) => {
     // id = req.query.id
     const id = req.params.id
     const { data, error } = await supabase.from('Cookies').select().eq('id', id)
