@@ -4,6 +4,7 @@ import { qrcodedynamic } from './asaas.js';
 import type { DTOProduto } from './dto.js';
 import { errorPostgres, handlerError, handlerUser, notFound } from './middlewares.js';
 import { getPedidosByUserid, createPedido, supabase, produtoDbToDTO } from './db.js';
+import { OAuth2Client } from 'google-auth-library';
 
 
 //import { asaasCreateCustomer, fetchAsaas, qrcodedynamic, qrcodestatic } from './asaas';
@@ -88,6 +89,32 @@ app.patch("/pedido/pagar", handlerUser, async (req, res) => {
   let valortotal = pedido.produtos.reduce((acc, cur) => cur.preco += acc, 0)
   let pix = await qrcodedynamic(_customer, valortotal)
   return res.json({ pix })
+})
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+app.post("/auth/google", async (req, res) => {
+  const token = req.body.token
+
+  if (!token){
+    return res.status(400).json({error: "token não fornecido"})
+  }
+  if (!process.env.GOOGLE_CLIENT_ID){
+    return res.status(500).json({error: "somos burros e .env não tem google_client_id"})
+  }
+  const ticket = await client.verifyIdToken({
+    idToken: token,
+    audience: process.env.GOOGLE_CLIENT_ID
+  })
+  const payload = ticket.getPayload();
+  if (!payload) {
+    return res.status(401).json({ error: "token inválido" })
+  }
+  const { sub: googleId, email, name, picture } = payload
+  // TODO: buscar eou criar usuario no db
+  // TODO: criar sessão jwt
+  return res.json({
+    user: { googleId, email, name, picture }
+  })
 })
 app.use(handlerError)
 
