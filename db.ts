@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { DTOPedido, DTOProduto } from "./dto.js"
+import type { DTOPedido, DTOProduto, DTOUser } from "./dto.js"
 import { errorPostgres } from "./middlewares.js";
 
 
@@ -19,7 +19,10 @@ export const pedidoDbToDTO = (pedido: any): DTOPedido => {
   const result: DTOPedido = {...pedido}
   return result
 }
-
+export const userDbToDTO = (user: any): DTOUser => {
+  const result: DTOUser = {...user}
+  return result
+}
 
 export async function getProdutoById(id: string): Promise<DTOProduto>{
   const { data, error } = await supabase.from('Cookies').select().eq('id', id)
@@ -40,4 +43,17 @@ export async function createPedido(pedido: DTOPedido){
   }
   l.push(pedido)
   return pedido
+}
+
+
+export async function userCreate(user: DTOUser){
+  const row = {name: user.name, email: user.email}
+  const {data, error} = await supabase.from("user").insert(row)
+  if (error) return errorPostgres(error);
+  return userDbToDTO(row)
+}
+export async function userGet(email: string){
+  const {data, error} = await supabase.from("user").select().eq("email", email)
+  if (error) return errorPostgres(error)
+  return userDbToDTO(data[0])
 }

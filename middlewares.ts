@@ -1,6 +1,7 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 import type { NextFunction, Request, Response, ErrorRequestHandler, RequestHandler} from "express";
-
+import jwt from 'jsonwebtoken'
+import { jwtkey } from "./index.js";
 // ??? magica pro typescript aceitar modificar req
 declare global {
   namespace Express{
@@ -33,9 +34,21 @@ export const handlerUser: RequestHandler = (req, res, next) => {
   if (auth === undefined){
     return res.status(401).json({error: "token de usuário não informado"})
   }
+  console.log("auth", auth)
   const [,token] = auth.split(" ")
+  if (!token){
+    throw new Error("token não fornecido")
+  }
+  const verify = jwt.verify(token, jwtkey)
+  console.log("verify", verify)
   // TODO: validar token
   req.user = {isGuest: true, id: ""}
+  next()
+}
+
+export const handlerLogged: RequestHandler = (req, res, next) => {
+  if (req.user.isGuest) return res.status(401).json({error: "user is guest"})
+  
   next()
 }
 

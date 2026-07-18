@@ -9,3 +9,9 @@ export interface DTOPedido {
   idUser: string,
   produtos: DTOProduto[]
 }
+
+
+export interface DTOUser{
+  name?: string,
+  email: string,
+}
