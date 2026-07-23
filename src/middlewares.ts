@@ -1,15 +1,16 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 import type { NextFunction, Request, Response, ErrorRequestHandler, RequestHandler} from "express";
-import jwt from 'jsonwebtoken'
-import { jwtkey } from "./index.js";
+import jwt, { type JwtPayload } from 'jsonwebtoken'
+
+import type { DTOUser } from "./dto.js";
+import { jwtkey } from "./routes/auth.js";
 // ??? magica pro typescript aceitar modificar req
 declare global {
   namespace Express{
     interface Request{
-      user: {
-        isGuest: boolean,
-        id: string,
-      }
+      user: DTOUser,
+      isGuest: boolean,
+
     }
   }
   interface Error{
@@ -28,6 +29,7 @@ export const errorPostgres = (err: PostgrestError) =>{
   error.status = 500
   throw error
 }
+
 export const handlerUser: RequestHandler = (req, res, next) => {
 
   const auth = req.headers.authorization
@@ -39,15 +41,22 @@ export const handlerUser: RequestHandler = (req, res, next) => {
   if (!token){
     throw new Error("token não fornecido")
   }
-  const verify = jwt.verify(token, jwtkey)
+  req.isGuest = true
+  const verify = jwt.verify(token, jwtkey, (err, decoded) => {
+    if (err){
+      return res.status(401).json({})
+    }
+    req.isGuest = false
+    console.log("not guest")
+    req.user = decoded as DTOUser
+  })
   console.log("verify", verify)
   // TODO: validar token
-  req.user = {isGuest: true, id: ""}
   next()
 }
 
 export const handlerLogged: RequestHandler = (req, res, next) => {
-  if (req.user.isGuest) return res.status(401).json({error: "user is guest"})
+  if (req.isGuest) return res.status(401).json({error: "user is guest"})
   
   next()
 }

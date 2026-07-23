@@ -5,9 +5,10 @@ export interface DTOProduto{
   id: string,
   image?: string,
 }
-export interface DTOPedido {
-  idUser: string,
-  produtos: DTOProduto[]
+export interface DTOPedido<T = string | DTOProduto>{
+  id: string,
+  user: string,
+  products: T[],
 }
 
 
