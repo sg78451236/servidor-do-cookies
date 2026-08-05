@@ -1,9 +1,9 @@
-import express from 'express'
+import express, { json } from 'express'
 import cors from 'cors'
 import { qrcodedynamic } from './asaas.js';
-import type { DTOProduto } from './dto.js';
+import type { DTOComment, DTOProduto, DTOUser } from './dto.js';
 import { errorPostgres, handlerError, handlerUser, notFound } from './middlewares.js';
-import { getPedidosByUserid, createPedido, supabase, produtoDbToDTO } from './db.js';
+import { getPedidosByUserid, createPedido, supabase, produtoDbToDTO, commentDbtoDTO, userDbtoDTO } from './db.js';
 
 
 //import { asaasCreateCustomer, fetchAsaas, qrcodedynamic, qrcodestatic } from './asaas';
@@ -22,6 +22,8 @@ async function getPedidoCurrent(pessoa: string) {
   return pedidos[0]
 
 }
+
+
 const validateProdutos = async (produtosId: string[]): Promise<DTOProduto[]> => {
   let resultProdutos: DTOProduto[] = []
 
@@ -34,7 +36,7 @@ const validateProdutos = async (produtosId: string[]): Promise<DTOProduto[]> => 
     resultProdutos.push(produto)
 
   }
-  return resultProdutos
+  return resultProdutos;
 
 }
 app.get('/home', async (req, res) => {
@@ -52,12 +54,49 @@ app.get('/produto/:id', async (req: any, res: any) => {
   if (error) return errorPostgres(error);
   if (data.length == 0) return res.json({produto: null});
   const produto: DTOProduto = produtoDbToDTO(data[0]) 
+
   if (!produto){
     return notFound("produto não foi encontrado")
   }
-  res.json({ produto: produto })
+  
+  //Sessão de comentários 
+  
+  const {data : comment, error : errorComment} = await supabase.from('Comentarios').select('analise, email').eq('fk_id', id)
 
+  if (errorComment) return errorPostgres(errorComment);
+  const comentariosVAR: DTOComment[] = comment.map(p => commentDbtoDTO(p))
+  
+
+  const {data : usuario,  error : errorUsuario} = await supabase.from('user').select('email')
+
+  if(errorUsuario) return errorPostgres(errorUsuario);
+  const usuarioVAR : DTOUser[] = usuario.map(p => userDbtoDTO(p))
+  console.log(usuario, "aqui é so a var usuario")
+  console.log(usuarioVAR, "aqui é dps do tratamento")
+  
+  res.json({ produto: produto, comentariosVAR : comentariosVAR, usuarioVAR : usuarioVAR})
+  
+  
 });
+
+app.post('/produto/:id', async (req: any, res: any) => {
+  const id = req.params.id
+  const { usuario, analise } = req.body;
+
+  const {data,  error} = await supabase.from('Comentarios').insert({analise : analise, email : usuario, fk_id : id})
+  
+  
+  if (!req.body || error) {
+    return res.status(400), error 
+  }
+  
+});
+
+// ====================
+
+
+
+
 
 app.get('/pedido', handlerUser, async (req, res) => {
   const meuspedidos = await getPedidosByUserid(req.user.id) 
@@ -66,6 +105,7 @@ app.get('/pedido', handlerUser, async (req, res) => {
   }
   return res.json({pedidos: meuspedidos.map((v) => v.produtos)})
 })
+
 
 app.post('/pedido', handlerUser, async (req, res) => {
   const produtosId: string[] = req.body.produtos
@@ -77,6 +117,8 @@ app.post('/pedido', handlerUser, async (req, res) => {
   let pedido = createPedido({idUser: req.user.id, produtos: produtos})
   return res.json({pedido: pedido})
 })
+
+
 app.patch("/pedido/pagar", handlerUser, async (req, res) => {
   // FIXME: acho q é importante verificar se o pedido atual do usuario é iguao ao da database
 
@@ -89,6 +131,8 @@ app.patch("/pedido/pagar", handlerUser, async (req, res) => {
   let pix = await qrcodedynamic(_customer, valortotal)
   return res.json({ pix })
 })
+
+
 app.use(handlerError)
 
 app.listen(3000, () => {

@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
-import type { DTOPedido, DTOProduto } from "./dto.js"
+import type { DTOPedido, DTOProduto, DTOComment, DTOUser} from "./dto.js"
 import { errorPostgres } from "./middlewares.js";
+import type { DotToken } from "typescript/unstable/ast";
 
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -20,6 +21,21 @@ export const pedidoDbToDTO = (pedido: any): DTOPedido => {
   return result
 }
 
+//************************************************
+
+export const commentDbtoDTO = (comment: any):  DTOComment => {
+    const result: DTOComment = {email: comment.email, analise: comment.analise}
+    return result
+}
+
+export const userDbtoDTO = (user: any): DTOUser => {
+  const result : DTOUser = {email: user.email}
+  return result
+}
+
+
+
+//************************************************
 
 export async function getProdutoById(id: string): Promise<DTOProduto>{
   const { data, error } = await supabase.from('Cookies').select().eq('id', id)
