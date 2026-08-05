@@ -6,7 +6,9 @@ import { errorPostgres, handlerError, handlerLogged, handlerUser, notFound } fro
 import { getPedidosByUser, createPedido, supabase, produtoDbToDTO, userGet, userCreate } from './db.js';
 import routerPedido from './routes/pedido.js'
 import routerAuth from './routes/auth.js'
-
+import routerProduto from './routes/produto.js'
+import path from 'path'
+import { fileURLToPath } from 'url';
 //import { asaasCreateCustomer, fetchAsaas, qrcodedynamic, qrcodestatic } from './asaas';
 const app = express();
 app.use(cors({ origin: "http://localhost:5173" }));
@@ -15,9 +17,8 @@ app.use(express.json())
 
 app.use('/pedido', handlerUser, routerPedido)
 app.use('/auth', routerAuth)
-
-
-
+app.use('/produto', routerProduto)
+app.use('/uploads', express.static(path.resolve('static/uploads')));
 app.get('/home', async (req, res) => {
   const { data, error } = await supabase.from('Cookies').select('*')
   if (error) return errorPostgres(error);
@@ -26,19 +27,6 @@ app.get('/home', async (req, res) => {
 })
 
 
-app.get('/produto/:id', async (req: any, res: any) => {
-  // id = req.query.id
-  const id = req.params.id
-  const { data, error } = await supabase.from('Cookies').select().eq('id', id)
-  if (error) return errorPostgres(error);
-  if (data.length == 0) return res.json({produto: null});
-  const produto: DTOProduto = produtoDbToDTO(data[0]) 
-  if (!produto){
-    return notFound("produto não foi encontrado")
-  }
-  res.json({ produto: produto })
-
-});
 
 
 app.use(handlerError)
