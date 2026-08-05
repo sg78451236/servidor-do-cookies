@@ -60,3 +60,29 @@ export async function qrcodedynamic(idCustomer: string, value: number){
   }
   return d
 }
+export async function asaasCreateWebhook(){
+  const options = {
+    method: 'POST',
+    body: JSON.stringify({
+      enabled: true,
+      interrupted: true,
+      sendType: 'NON_SEQUENTIALLY',
+      events: ['PAYMENT_AUTHORIZED'],
+      name: "pix",
+      email: "droitubez@gmail.com",
+      url: "https://violet-olives-taste.loca.lt",
+    })
+  };
+  const res = await fetchAsaas('webhooks', options)
+  console.log(res)
+  const d = await res.json()
+  console.log(d)
+}
+export async function asaasListarWebhooks(){
+  const res = await fetchAsaas('webhooks')
+  console.log(res)
+  const d = await res.json()
+  console.log(d.data[0])
+}
+// asaasCreateWebhook();
+asaasListarWebhooks();
