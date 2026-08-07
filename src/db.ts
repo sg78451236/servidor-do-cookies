@@ -5,6 +5,7 @@ import { errorPostgres } from "./middlewares.js";
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_SECRET_KEY;
+console.log("env", process.env)
 console.log("supabase url", supabaseUrl)
 console.log("supabase key", supabaseKey)
 

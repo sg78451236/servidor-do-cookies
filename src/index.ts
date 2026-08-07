@@ -11,7 +11,7 @@ import path from 'path'
 import { fileURLToPath } from 'url';
 //import { asaasCreateCustomer, fetchAsaas, qrcodedynamic, qrcodestatic } from './asaas';
 const app = express();
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ origin: "*" }));
 app.use(express.json())
 // FIXME: Não ta identificando o pedido certo, só pega o primeiro da lista (não da pra pagar outro pedido alem do primeiro)
 
