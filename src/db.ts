@@ -5,8 +5,16 @@ import { errorPostgres } from "./middlewares.js";
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_SECRET_KEY;
+console.log("supabase url", supabaseUrl)
+console.log("supabase key", supabaseKey)
 
-export const supabase = createClient(supabaseUrl || '', supabaseKey || '');
+if (!supabaseUrl){
+  throw new Error("not supabaseurl");
+}
+if (!supabaseKey){
+  throw new Error("not supabasekey");
+}
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export const produtoDbToDTO = (produto: any): DTOProduto => {
   const result: DTOProduto = {id: produto.id, name: produto.nome, preco: produto.preco, image: produto.image}
