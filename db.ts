@@ -1,0 +1,59 @@
+import { createClient } from "@supabase/supabase-js";
+import type { DTOPedido, DTOProduto, DTOComment, DTOUser} from "./dto.js"
+import { errorPostgres } from "./middlewares.js";
+import type { DotToken } from "typescript/unstable/ast";
+
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+export const supabase = createClient(supabaseUrl || '', supabaseKey || '');
+
+export let dbPedidos = new Map<string, DTOPedido[]>()
+
+
+export const produtoDbToDTO = (produto: any): DTOProduto => {
+  const result: DTOProduto = {id: produto.id, name: produto.nome, preco: produto.preco, image: produto.image}
+  return result
+}
+export const pedidoDbToDTO = (pedido: any): DTOPedido => {
+  const result: DTOPedido = {...pedido}
+  return result
+}
+
+//************************************************
+
+export const commentDbtoDTO = (comment: any):  DTOComment => {
+    const result: DTOComment = {email: comment.email, analise: comment.analise}
+    return result
+}
+
+export const userDbtoDTO = (user: any): DTOUser => {
+  const result : DTOUser = {email: user.email}
+  return result
+}
+
+
+
+//************************************************
+
+export async function getProdutoById(id: string): Promise<DTOProduto>{
+  const { data, error } = await supabase.from('Cookies').select().eq('id', id)
+  if (error) return errorPostgres(error);
+  return produtoDbToDTO(data[0])
+}
+export async function getPedidosByUserid(userid: string): Promise<DTOPedido[]>{
+  let pedidos = dbPedidos.get(userid)
+  if (pedidos === undefined) return []
+  pedidos = pedidos.map((v) => pedidoDbToDTO(v));
+  return pedidos
+}
+export async function createPedido(pedido: DTOPedido){
+  const l = dbPedidos.get(pedido.idUser)
+  if (l === undefined){
+    dbPedidos.set(pedido.idUser, [pedido])
+    return pedido
+  }
+  l.push(pedido)
+  return pedido
+}
