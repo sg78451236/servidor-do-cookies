@@ -1,8 +1,8 @@
 import express from 'express'
 import multer from 'multer'
 import { errorPostgres, notFound } from '../middlewares.js';
-import { produtoDbToDTO, supabase } from '../db.js';
-import type { DTOProduto } from '../dto.js';
+import { commentDbtoDTO, produtoDbToDTO, supabase } from '../db.js';
+import type { DTOComment, DTOProduto } from '../dto.js';
 import path from 'path'
 const router = express.Router()
 
@@ -28,7 +28,11 @@ router.get('/:id', async (req, res) => {
   if (!produto){
     return notFound("produto não foi encontrado")
   }
-  res.json({ produto: produto })
+  const {data : comment, error : errorComment} = await supabase.from('Comentarios').select('analise, email').eq('fk_id', id)
+  if (errorComment) return errorPostgres(errorComment);
+  const comentariosVAR: DTOComment[] = comment.map(p => commentDbtoDTO(p))
+
+  res.json({ produto: produto, comentariosVAR })
 
 });
 

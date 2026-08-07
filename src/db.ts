@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { DTOPedido, DTOProduto, DTOUser } from "./dto.js"
+import type { DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js"
 import { errorPostgres } from "./middlewares.js";
 
 
@@ -55,4 +55,18 @@ export async function userGet(email: string){
   if (error) return errorPostgres(error)
   if (data.length == 0) return null
   return userDbToDTO(data[0])
+}
+
+
+
+//************************************************
+
+export const commentDbtoDTO = (comment: any):  DTOComment => {
+    const result: DTOComment = {email: comment.email, analise: comment.analise}
+    return result
+}
+
+export const userDbtoDTO = (user: any): DTOUser => {
+  const result : DTOUser = {email: user.email}
+  return result
 }

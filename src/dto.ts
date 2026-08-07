@@ -12,6 +12,10 @@ export interface DTOPedido<T = string | DTOProduto>{
 }
 
 
+export interface DTOComment{
+  analise: string
+  email: string,
+}
 export interface DTOUser{
   name?: string,
   email: string,
