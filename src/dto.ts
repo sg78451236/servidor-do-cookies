@@ -20,3 +20,5 @@ export interface DTOUser{
   name?: string,
   email: string,
 }
+
+export type AnyDTOs = DTOProduto | DTOPedido | DTOComment | DTOUser
