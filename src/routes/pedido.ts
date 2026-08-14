@@ -1,8 +1,9 @@
 import express from 'express'
-import { createPedido, getPedidoById, getPedidosByUser, getProdutoById, produtoDbToDTO, supabase } from '../db.js'
+import { produtoDbToDTO, supabase } from '../db.js'
 import { qrcodedynamic } from '../asaas.js'
 import { errorPostgres, notFound } from '../middlewares.js'
 import type { DTOPedido, DTOProduto } from '../dto.js'
+import { createPedido, getPedidoById, getPedidosByUser, getProdutoById } from '../db_reqs.js'
 
 const validateProdutos = async (produtosId: string[]): Promise<DTOProduto[]> => {
   let resultProdutos: DTOProduto[] = []
@@ -11,6 +12,9 @@ const validateProdutos = async (produtosId: string[]): Promise<DTOProduto[]> => 
   for(const v of produtosId){
     const {data, error} = await supabase.from('Cookies').select().eq("id", v)
     if (error) return errorPostgres(error);
+    if (!data || !data[0]){
+      continue;
+    }
     let produto: DTOProduto = produtoDbToDTO(data[0])
     
     resultProdutos.push(produto)
@@ -18,10 +22,6 @@ const validateProdutos = async (produtosId: string[]): Promise<DTOProduto[]> => 
   }
   return resultProdutos
 
-}
-async function getPedidoCurrent(email: string) {
-  let pedidos = await getPedidosByUser(email)
-  return pedidos[0]
 }
 let _customer: string
 (async () => {
@@ -38,9 +38,9 @@ router.get('/', async (req, res) => {
     meuspedidos = await Promise.all(
       meuspedidos.map(async pedido => ({
         ...pedido,
-        products: await Promise.all(
+        products: (await Promise.all(
           pedido.products.map(id => getProdutoById(id))
-        )
+        )).filter(p => p !== null)
       }))
     )
 
@@ -71,6 +71,7 @@ router.patch("/pagar", async (req, res) => {
   let valortotal = 0
   for(const p of pedido.products){
     let produto = await getProdutoById(p)
+    if (!produto) continue;
     valortotal += produto.preco
   }
   let pix = await qrcodedynamic(_customer, valortotal)

@@ -2,7 +2,8 @@ import express from 'express'
 import { OAuth2Client } from 'google-auth-library'
 import { notFound } from '../middlewares.js'
 import jwt from 'jsonwebtoken'
-import { userCreate, userGet } from '../db.js'
+import { userCreate, userGet } from '../db_reqs.js'
+
 import type { DTOUser } from '../dto.js'
 
 export const jwtkey = "chavealeatoriaabalabala"

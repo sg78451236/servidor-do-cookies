@@ -51,7 +51,7 @@ export type Database = {
           analise: string
           created_at?: string
           email: string
-          fk_id?: string
+          fk_id: string
           id?: string
         }
         Update: {

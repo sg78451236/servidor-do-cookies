@@ -13,12 +13,13 @@ export interface DTOPedido<T = string | DTOProduto>{
 
 
 export interface DTOComment{
-  analise: string
-  email: string,
+  analise: string,
+  idProduct: string,
+  userId: string,
+  userName?: string,
+
 }
 export interface DTOUser{
   name?: string,
   email: string,
 }
-
-export type AnyDTOs = DTOProduto | DTOPedido | DTOComment | DTOUser

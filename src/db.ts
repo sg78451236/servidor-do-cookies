@@ -1,5 +1,5 @@
 import { createClient, type PostgrestFilterBuilder, type PostgrestResponse } from "@supabase/supabase-js";
-import type { AnyDTOs, DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js"
+import type {  DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js"
 import { errorPostgres } from "./middlewares.js";
 
 import type { Database } from "./supabase.js";
@@ -26,6 +26,12 @@ export interface Table2DTO {
   comment: DTOComment,
 }
 
+export type TableRow<K extends TableName> =
+  Database['public']['Tables'][(typeof Tables)[K]]['Row'];
+
+
+export type TableInsert<K extends TableName> =
+  Database['public']['Tables'][(typeof Tables)[K]]['Insert'];
 
 if (!supabaseUrl){
   throw new Error("not supabaseurl");
@@ -35,30 +41,25 @@ if (!supabaseKey){
 }
 export const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
-export const produtoDbToDTO = (produto: any): DTOProduto => {
-  const result: DTOProduto = {id: produto.id, name: produto.nome, preco: produto.preco, image: produto.image}
+export const produtoDbToDTO = (produto: TableRow<'cookie'>): DTOProduto => {
+  const result: DTOProduto = {id: produto.id, name: produto.nome ?? "não nomeado", preco: produto.preco, ...(produto.image != null ? {image: produto.image} : {})}
   return result
 }
-export const pedidoDbToDTO = (pedido: any): DTOPedido<string> => {
+export const pedidoDbToDTO = (pedido: TableRow<'order'>): DTOPedido<string> => {
   const result: DTOPedido<string> = {id: pedido.id, products: pedido.products, user: pedido.user}
   return result
 }
-export const userDbToDTO = (user: any): DTOUser => {
-  const result: DTOUser = {name: user.name, email: user.email}
-  return result
-}
 
-export const commentDbtoDTO = (comment: any):  DTOComment => {
-  const result: DTOComment = {email: comment.email, analise: comment.analise}
+export const commentDbtoDTO = (comment: TableRow<'comment'>):  DTOComment => {
+  const result: DTOComment = {userId: comment.email, analise: comment.analise, idProduct: comment.fk_id}
   return result
 }
-export const userDbtoDTO = (user: any): DTOUser => {
-  const result : DTOUser = {email: user.email}
+export const userDbtoDTO = (user: TableRow<'user'>): DTOUser => {
+  const result : DTOUser = {name: user.name, email: user.email}
   return result
 }
 
 
-type AnyTable = Database['public']['Tables'][keyof Database['public']['Tables']]['Row'];
 const Table2DTOFn = {
   user: userDbtoDTO,
   cookie: produtoDbToDTO,
@@ -67,17 +68,15 @@ const Table2DTOFn = {
   
 
 } 
-type DbTableRow<K extends TableName> =
-  Database['public']['Tables'][(typeof Tables)[K]]['Row'];
 
   
-function db2dto<K extends TableName>(name: K, obj: DbTableRow<K>): Table2DTO[K]{
-  return ( Table2DTOFn[name] as (obj: DbTableRow<K>) => Table2DTO[K] )(obj);
+function db2dto<K extends TableName>(name: K, obj: TableRow<K>): Table2DTO[K]{
+  return ( Table2DTOFn[name] as (obj: TableRow<K>) => Table2DTO[K] )(obj);
 }
 function baseQuery<K extends TableName>(tablename: K) {
   return supabase.from(Tables[tablename] as (typeof Tables)[K]).select('*');
 }
-export async function dbGet<K extends TableName, R extends DbTableRow<K>[]>(
+export async function dbGet<K extends TableName, R extends TableRow<K>[]>(
   tablename: K,
   buildQuery?: (query: ReturnType<typeof baseQuery<K>>) => any
 ): Promise<(Table2DTO[K])[]> {
@@ -88,8 +87,10 @@ export async function dbGet<K extends TableName, R extends DbTableRow<K>[]>(
   }
 
   const { data, error } = await query;
-
+  console.log('data', data)
   if (error) return errorPostgres(error);
   
-  return (data as R).map((v) => db2dto(tablename, v))
+  const d = (data as R).map((v) => db2dto(tablename, v))
+  console.log('d', d)
+  return d
 } 

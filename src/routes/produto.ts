@@ -23,12 +23,12 @@ router.get('/:id', async (req, res) => {
   const id = req.params.id
   const { data, error } = await supabase.from('Cookies').select().eq('id', id)
   if (error) return errorPostgres(error);
-  if (data.length == 0) return res.json({produto: null});
+  if (!data || !data[0] || data.length == 0) return res.json({produto: null});
   const produto: DTOProduto = produtoDbToDTO(data[0]) 
   if (!produto){
     return notFound("produto não foi encontrado")
   }
-  const {data : comment, error : errorComment} = await supabase.from('Comentarios').select('analise, email').eq('fk_id', id)
+  const {data : comment, error : errorComment} = await supabase.from('Comentarios').select().eq('fk_id', id)
   if (errorComment) return errorPostgres(errorComment);
   const comentariosVAR: DTOComment[] = comment.map(p => commentDbtoDTO(p))
 

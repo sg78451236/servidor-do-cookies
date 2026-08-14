@@ -1,6 +1,6 @@
-import { dbGet, pedidoDbToDTO, produtoDbToDTO, supabase, Tables, userDbToDTO } from "./db";
-import type { DTOPedido, DTOProduto, DTOUser } from "./dto";
-import { errorPostgres } from "./middlewares";
+import { dbGet, supabase, type TableInsert } from "./db.js";
+import type { DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js";
+import { errorPostgres } from "./middlewares.js";
 
 
 export async function getProdutoById(id: string): Promise<DTOProduto | null>{
@@ -16,7 +16,7 @@ export async function getPedidosByUser(email: string): Promise<DTOPedido<string>
 export async function getPedidoById(id: string){
   const data = await dbGet('order', (q) => q.eq('id', id))
   if (data.length == 0) return null
-  return data
+  return data[0] as DTOPedido<string>
 }
 export async function createPedido(produtos: DTOProduto[], user: string){
   const row = {products: produtos.map((v) => v.id), user: user}
@@ -26,7 +26,7 @@ export async function createPedido(produtos: DTOProduto[], user: string){
 
 
 export async function userCreate(user: DTOUser){
-  const row = {name: user.name, email: user.email}
+  const row: TableInsert<'user'> = {name: user.name ?? 'guest', email: user.email}
   const {data, error} = await supabase.from("user").insert(row)
   if (error) return errorPostgres(error);
 
@@ -40,4 +40,9 @@ export async function userGet(email: string){
 
 export async function commentGet(idProduct: string){
   return await dbGet('comment', (q) => q.eq('fk_id', idProduct))
+}
+export async function commentCreate(comment: DTOComment){
+  const row: TableInsert<'comment'> = {analise: comment.analise, email: comment.userId, fk_id: comment.idProduct}
+  const {data, error} = await supabase.from("Comentarios").insert(row)
+  if (error) return errorPostgres(error)
 }
