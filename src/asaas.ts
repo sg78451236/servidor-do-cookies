@@ -84,5 +84,5 @@ export async function asaasListarWebhooks(){
   const d = await res.json()
   console.log(d.data)
 }
-asaasCreateWebhook();
-// asaasListarWebhooks();
+// asaasCreateWebhook();
+asaasListarWebhooks();
