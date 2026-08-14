@@ -7,6 +7,7 @@ import routerPedido from './routes/pedido.js'
 import routerAuth from './routes/auth.js'
 import routerProduto from './routes/produto.js'
 import routerComment from './routes/comment.js'
+import routerWebhooks from './routes/webhooks.js'
 import path from 'path'
 
 const app = express();
@@ -18,6 +19,7 @@ app.use('/pedido', handlerUser, routerPedido)
 app.use('/auth', routerAuth)
 app.use('/produto', routerProduto)
 app.use('/comment', routerComment)
+app.use('/webhooks', routerWebhooks)
 app.use('/uploads', express.static(path.resolve('static/uploads')));
 app.get('/home', async (req, res) => {
   const { data, error } = await supabase.from('Cookies').select('*')

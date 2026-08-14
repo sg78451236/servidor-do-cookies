@@ -65,12 +65,12 @@ export async function asaasCreateWebhook(){
     method: 'POST',
     body: JSON.stringify({
       enabled: true,
-      interrupted: true,
+      interrupted: false,
       sendType: 'NON_SEQUENTIALLY',
-      events: ['PAYMENT_AUTHORIZED'],
-      name: "pix",
+      events: ['PAYMENT_AUTHORIZED', 'PAYMENT_RECEIVED', 'PAYMENT_CREATED', 'PAYMENT_CONFIRMED'],
+      name: "cuquis-pix",
       email: "droitubez@gmail.com",
-      url: "https://violet-olives-taste.loca.lt",
+      url: "https://servidor-do-cookies.onrender.com/webhooks/asaas",
     })
   };
   const res = await fetchAsaas('webhooks', options)
@@ -82,7 +82,7 @@ export async function asaasListarWebhooks(){
   const res = await fetchAsaas('webhooks')
   console.log(res)
   const d = await res.json()
-  console.log(d.data[0])
+  console.log(d.data)
 }
-// asaasCreateWebhook();
-asaasListarWebhooks();
+asaasCreateWebhook();
+// asaasListarWebhooks();
