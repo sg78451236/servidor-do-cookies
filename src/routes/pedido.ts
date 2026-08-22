@@ -5,6 +5,7 @@ import { errorPostgres, notFound } from '../middlewares.js'
 import type { DTOPedido, DTOProduto } from '../dto.js'
 import { createPedido, getPedidoById, getPedidosByUser, getProdutoById } from '../db_reqs.js'
 
+
 const validateProdutos = async (produtosId: string[]): Promise<DTOProduto[]> => {
   let resultProdutos: DTOProduto[] = []
 
@@ -59,6 +60,7 @@ router.post('/', async (req, res) => {
   const produtos: DTOProduto[] = await validateProdutos(produtosId)
   await createPedido(produtos, req.user.email)
 })
+
 router.patch("/pagar", async (req, res) => {
   // FIXME: acho q é importante verificar se o pedido atual do usuario é iguao ao da database
   

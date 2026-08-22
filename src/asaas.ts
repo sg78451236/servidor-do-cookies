@@ -85,4 +85,4 @@ export async function asaasListarWebhooks(){
   console.log(d.data)
 }
 // asaasCreateWebhook();
-asaasListarWebhooks();
+// asaasListarWebhooks();

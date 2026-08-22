@@ -23,6 +23,7 @@ app.use('/webhooks', routerWebhooks)
 app.use('/uploads', express.static(path.resolve('static/uploads')));
 app.get('/home', async (req, res) => {
   const { data, error } = await supabase.from('Cookies').select('*')
+  console.log(data, error)
   if (error) return errorPostgres(error);
   const produtos: DTOProduto[] = data.map(v => produtoDbToDTO(v))//Array.from(dbProdutos).map((v) => ({id: v[0], ...v[1]})) 
   res.json({ produtos: produtos })
