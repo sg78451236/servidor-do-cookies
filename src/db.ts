@@ -69,7 +69,7 @@ const Table2DTOFn = {
 } 
 
   
-function db2dto<K extends TableName>(name: K, obj: TableRow<K>): Table2DTO[K]{
+export function db2dto<K extends TableName>(name: K, obj: TableRow<K>): Table2DTO[K]{
   return ( Table2DTOFn[name] as (obj: TableRow<K>) => Table2DTO[K] )(obj);
 }
 function baseQuery<K extends TableName>(tablename: K) {
