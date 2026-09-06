@@ -1,4 +1,4 @@
-import { dbGet, supabase, type TableInsert } from "./db.js";
+import { dbGet, supabase, Tables, type TableInsert } from "./db.js";
 import type { DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js";
 import { errorPostgres } from "./middlewares.js";
 
@@ -20,8 +20,14 @@ export async function getPedidoById(id: string){
 }
 export async function createPedido(produtos: DTOProduto[], user: string){
   const row = {products: produtos.map((v) => v.id), user: user}
+  console.log("create order", row);
   const {data, error} = await supabase.from("order").insert(row)
   if (error) return errorPostgres(error);
+}
+export async function payPedido(id: string){
+  const data = await supabase.from(Tables.order).update({status: "paid"}).eq("id", id);
+  console.log("pay pedido", data);
+
 }
 
 

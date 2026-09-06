@@ -9,6 +9,7 @@ export interface DTOPedido<T = string | DTOProduto>{
   id: string,
   user: string,
   products: T[],
+  status: "pending" | "paid"
 }
 
 

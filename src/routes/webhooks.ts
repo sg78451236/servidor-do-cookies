@@ -1,6 +1,7 @@
 
 
 import express from 'express'
+import { payPedido } from '../db_reqs.js';
 const router = express.Router()
 
 
@@ -21,10 +22,15 @@ router.post('/asaas', async (req, res) => {
 
     break;
     case 'PAYMENT_RECEIVED':
-    req.body.payment.id
+      let orderId: string = req.body.payment.externalReference;
+      payPedido(orderId);
+
+
+
     break;
 
   }
+  console.log("webhook asaas");
   return res.json({received: true})
 
 })

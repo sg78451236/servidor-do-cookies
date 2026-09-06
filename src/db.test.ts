@@ -1,7 +1,7 @@
 import assert from "node:assert"
 import test, { describe } from "node:test"
-import { db2dto, userDbtoDTO, type TableRow } from "./db"
-import type { DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto"
+import { db2dto, userDbtoDTO, type TableRow } from "./db.js"
+import type { DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js"
 
 
 
@@ -40,11 +40,13 @@ describe('convertion of database objects to DTOs', () => {
       id: "qualquer",
       user: "qualquer",
       products: ["qualquer1", "qualquer2"],
+      status: "pending",
     }
     const expected: DTOPedido = {
       id: "qualquer",
       user: "qualquer",
       products: ["qualquer1", "qualquer2"],
+      status: "pending",
       
     }
     const objdto = db2dto("order", objdb)

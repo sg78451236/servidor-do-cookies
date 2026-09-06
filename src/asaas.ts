@@ -36,11 +36,12 @@ export async function asaasCreateCustomer(){
   const data = await res.json()
   return data
 }
-export async function qrcodedynamic(idCustomer: string, value: number){
+export async function qrcodedynamic(idCustomer: string, idOrder: string, value: number){
   const res = await fetchAsaas("lean/payments", {
     method: 'POST',
     body: JSON.stringify({
       "customer": idCustomer,
+      "externalReference": idOrder,
       "billingType": "PIX",
       "value": value,
       "dueDate": new Date().toISOString().split('T')[0],

@@ -1,4 +1,5 @@
 import { createClient, type PostgrestFilterBuilder, type PostgrestResponse } from "@supabase/supabase-js";
+// import { createClient } from "../node_modules/@supabase/supabase-js/dist/index.cjs";
 import type {  DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js"
 import { errorPostgres } from "./middlewares.js";
 
@@ -44,8 +45,13 @@ export const produtoDbToDTO = (produto: TableRow<'cookie'>): DTOProduto => {
   const result: DTOProduto = {id: produto.id, name: produto.nome ?? "não nomeado", preco: produto.preco, ...(produto.image != null ? {image: produto.image} : {})}
   return result
 }
-export const pedidoDbToDTO = (pedido: TableRow<'order'>): DTOPedido<string> => {
-  const result: DTOPedido<string> = {id: pedido.id, products: pedido.products, user: pedido.user}
+export const pedidoDbToDTO = (pedido: TableRow<'order'>): undefined | DTOPedido<string> => {
+  // FIXME: verificando cada union 1 a 1. duplicação de codigo, o melhor jeito seria definir union no supabase tbm
+  if (pedido.status != "pending" && pedido.status != "paid") {
+    console.log("pedido nao pode ser convertido pra dto");
+    return undefined;
+  }
+  const result: DTOPedido<string> = {id: pedido.id, products: pedido.products, user: pedido.user, status: pedido.status as DTOPedido<string>['status']};
   return result
 }
 
@@ -86,7 +92,6 @@ export async function dbGet<K extends TableName, R extends TableRow<K>[]>(
   }
 
   const { data, error } = await query;
-  console.log('data', data)
   if (error) return errorPostgres(error);
   
   const d = (data as R).map((v) => db2dto(tablename, v))
