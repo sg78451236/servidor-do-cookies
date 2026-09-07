@@ -1,7 +1,7 @@
 import assert, { deepEqual } from "node:assert"
-import { db2dto, userDbtoDTO, type TableRow } from "./db.js"
 import type { DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js"
 import { test, expect, describe } from "vitest"
+import { db2dto, type TableRow } from "./db_to_dto.js"
 
 
 
