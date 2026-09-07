@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "dev": "concurrently \"npx tsc && node --env-file=.env --watch dist/index.js\" \"npx localtunnel --port 3000 --subdomain cuquisdebug\""
+    "dev": "concurrently \"npx tsc && node --env-file=.env --watch dist/index.js\" \"npx localtunnel --port 3000 --subdomain cuquisdebug\"",
+    "test": "vitest"
   },
   "name": "Servidor",
   "version": "1.0.0",
@@ -21,6 +22,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.2.0",
     "@types/node": "^26.2.0",
-    "concurrently": "^10.0.5"
+    "concurrently": "^10.0.5",
+    "vitest": "^5.0.0"
   }
 }

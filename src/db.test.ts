@@ -1,7 +1,7 @@
-import assert from "node:assert"
-import test, { describe } from "node:test"
+import assert, { deepEqual } from "node:assert"
 import { db2dto, userDbtoDTO, type TableRow } from "./db.js"
 import type { DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js"
+import { test, expect, describe } from "vitest"
 
 
 
@@ -30,8 +30,10 @@ describe('convertion of database objects to DTOs', () => {
 
     const dtoobj_date_wrong = db2dto("user", objdb_date_wrong)
     const dtoobj_date_right = db2dto("user", objdb_date_right)
-    assert.deepEqual(expected_date_wrong, dtoobj_date_wrong);
-    assert.deepEqual(expected_date_right, dtoobj_date_right);
+    // assert.deepEqual(expected_date_wrong, dtoobj_date_wrong);
+    // assert.deepEqual(expected_date_right, dtoobj_date_right);
+    expect(dtoobj_date_wrong).toEqual(expected_date_wrong);
+    expect(dtoobj_date_right).toEqual(expected_date_right);
   })
 
   test('order', () => {
@@ -51,7 +53,8 @@ describe('convertion of database objects to DTOs', () => {
     }
     const objdto = db2dto("order", objdb)
 
-    assert.deepEqual(expected, objdto)
+    // assert.deepEqual(expected, objdto)
+    expect(objdto).toEqual(expected);
   })
 
   test('product', () => {
@@ -69,7 +72,8 @@ describe('convertion of database objects to DTOs', () => {
     }
     const objdto = db2dto("cookie", objdb)
 
-    assert.deepEqual(expected, objdto)
+    // assert.deepEqual(expected, objdto)
+    expect(objdto).toEqual(expected);
   })
 
   test('comment', () => {
@@ -87,6 +91,7 @@ describe('convertion of database objects to DTOs', () => {
     }
 
     const objdto = db2dto("comment", objdb)
-    assert.deepEqual(expected, objdto)
+    // assert.deepEqual(expected, objdto)
+    expect(objdto).toEqual(expected); 
   })
 })
