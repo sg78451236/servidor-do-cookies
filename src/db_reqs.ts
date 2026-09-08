@@ -1,4 +1,5 @@
-import { dbGet, supabase, Tables, type TableInsert } from "./db.js";
+import { dbGet, supabase } from "./db.js";
+import { Tables, type TableInsert } from "./db_to_dto.js";
 import type { DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js";
 import { errorPostgres } from "./middlewares.js";
 
@@ -21,7 +22,7 @@ export async function getPedidoById(id: string){
 export async function createPedido(produtos: DTOProduto[], user: string){
   const row = {products: produtos.map((v) => v.id), user: user}
   console.log("create order", row);
-  const {data, error} = await supabase.from("order").insert(row)
+  const {data, error} = await supabase.from(Tables.order).insert(row)
   if (error) return errorPostgres(error);
 }
 export async function payPedido(id: string){
@@ -33,7 +34,7 @@ export async function payPedido(id: string){
 
 export async function userCreate(user: DTOUser){
   const row: TableInsert<'user'> = {name: user.name ?? 'guest', email: user.email}
-  const {data, error} = await supabase.from("user").insert(row)
+  const {data, error} = await supabase.from(Tables.user).insert(row)
   if (error) return errorPostgres(error);
 
 }
@@ -49,6 +50,6 @@ export async function commentGet(idProduct: string){
 }
 export async function commentCreate(comment: DTOComment){
   const row: TableInsert<'comment'> = {analise: comment.analise, email: comment.userId, fk_id: comment.idProduct}
-  const {data, error} = await supabase.from("Comentarios").insert(row)
+  const {data, error} = await supabase.from(Tables.comment).insert(row)
   if (error) return errorPostgres(error)
 }

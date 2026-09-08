@@ -30,6 +30,7 @@ export const errorPostgres = (err: PostgrestError) =>{
   throw error
 }
 
+// definir req.user baseado no token da sessão
 export const handlerUser: RequestHandler = (req, res, next) => {
 
   const auth = req.headers.authorization
@@ -55,6 +56,7 @@ export const handlerUser: RequestHandler = (req, res, next) => {
   next()
 }
 
+// só aceita se usuário está logado
 export const handlerLogged: RequestHandler = (req, res, next) => {
   if (req.isGuest) return res.status(401).json({error: "user is guest"})
   

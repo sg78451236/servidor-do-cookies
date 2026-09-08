@@ -7,10 +7,6 @@ const router = express.Router()
 
 router.post('/asaas', async (req, res) => {
   console.log('webhook asaas post', req.body)
-  /*
-  TODO:
-  - descobrir usuario que pagou
-  */
   switch(req.body.event){
     case 'PAYMENT_CREATED':
 

@@ -4,6 +4,7 @@ import { qrcodedynamic } from '../asaas.js'
 import { errorPostgres, notFound } from '../middlewares.js'
 import type { DTOPedido, DTOProduto } from '../dto.js'
 import { createPedido, getPedidoById, getPedidosByUser, getProdutoById } from '../db_reqs.js'
+import { Tables } from '../db_to_dto.js'
 
 
 const validateProdutos = async (produtosId: string[]): Promise<DTOProduto[]> => {
@@ -11,7 +12,7 @@ const validateProdutos = async (produtosId: string[]): Promise<DTOProduto[]> => 
 
   // verificar se cada produto existe na DB
   for(const v of produtosId){
-    const {data, error} = await supabase.from('Cookies').select().eq("id", v)
+    const {data, error} = await supabase.from(Tables.cookie).select().eq("id", v)
     if (error) return errorPostgres(error);
     if (!data || !data[0]){
       continue;
@@ -24,10 +25,6 @@ const validateProdutos = async (produtosId: string[]): Promise<DTOProduto[]> => 
   return resultProdutos
 
 }
-let _customer: string
-(async () => {
-  _customer = process.env._CUSTOMER ?? ""//await asaasCreateCustomer()
-})()
 
 const router = express.Router()
 
@@ -55,7 +52,7 @@ router.get('/', async (req, res) => {
 
 
 function isOrderPending(order: DTOPedido){
-  return true;
+  return order.status == "pending";
 }
 
 router.post('/', async (req, res) => {
@@ -69,7 +66,7 @@ router.post('/', async (req, res) => {
   console.log("orders", orders);
   let orderPending = orders.find((v) => isOrderPending(v));
   if (orderPending){
-    return res.json({error: "user ainda tem ao menos 1 pedido pendente"});
+    return res.status(409).json({error: "user ainda tem ao menos 1 pedido pendente"});
   }
 
 
@@ -78,24 +75,6 @@ router.post('/', async (req, res) => {
   await createPedido(produtos, req.user.email)
 })
 
-router.patch("/pagar", async (req, res) => {
-  // FIXME: acho q é importante verificar se o pedido atual do usuario é iguao ao da database
-  
-  let pedido = await getPedidoById(req.body.pedido)
-  if (!pedido){
-    return notFound("pedido não foi encontrado")
-  }
-  console.log("pedido", pedido)
-  console.log("produtos", pedido.products)
-  let valortotal = 0
-  for(const p of pedido.products){
-    let produto = await getProdutoById(p)
-    if (!produto) continue;
-    valortotal += produto.preco
-  }
-  let pix = await qrcodedynamic(_customer, pedido.id, valortotal)
-  return res.json({ pix })
-})
 
 
 export default router

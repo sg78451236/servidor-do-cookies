@@ -1,23 +1,18 @@
 
-import express from 'express'
+import { type Request, type Response} from 'express'
 import { commentCreate, commentGet } from '../db_reqs.js'
 import type { DTOComment } from '../dto.js'
 import { handlerLogged, handlerUser } from '../middlewares.js'
-const router = express.Router()
 
-
-router.get('/:idProduct', async (req, res) => {
-  const { idProduct } = req.params
-  console.log('comments id product', idProduct)
-  let comments = await commentGet(idProduct)
+export async function getCommentsByProduct(req: Request, res: Response){
+  const { id } = req.params
+  console.log('comments id product', id)
+  let comments = await commentGet(id)
   // TODO: set usernames
 
   res.json({comments: comments})
-})
-interface a{
-  idProduct: string
 }
-router.post('/:idProduct', handlerUser, handlerLogged, async (req, res) => {
+export async function postCommentByProduct(req: Request, res: Response){
   let { idProduct } = req.params
   if(Array.isArray(idProduct)){idProduct = idProduct[0]}
   if (!idProduct){return}
@@ -28,6 +23,5 @@ router.post('/:idProduct', handlerUser, handlerLogged, async (req, res) => {
   console.log(req.isGuest, req.user, comment)
   await commentCreate((comment as DTOComment))
 
-})
+}
 
-export default router
