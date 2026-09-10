@@ -1,4 +1,4 @@
-import type { DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js";
+import type { DTOComment, DTOPedido, DTOProduto, DTOUser } from "./shared/dto.js";
 import type { Database } from "./supabase.js";
 
 export const Tables = {

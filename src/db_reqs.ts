@@ -1,6 +1,6 @@
 import { dbGet, supabase } from "./db.js";
 import { Tables, type TableInsert, type TableRow } from "./db_to_dto.js";
-import type { DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js";
+import type { DTOComment, DTOPedido, DTOProduto, DTOUser } from './shared/dto.js';
 import { errorPostgres } from "./middlewares.js";
 
 

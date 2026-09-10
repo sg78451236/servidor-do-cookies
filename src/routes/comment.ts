@@ -1,7 +1,7 @@
 
 import { type Request, type Response} from 'express'
 import { commentCreate, commentGet } from '../db_reqs.js'
-import type { DTOComment } from '../dto.js'
+import type { DTOComment } from '../shared/dto.js'
 import { handlerLogged, handlerUser } from '../middlewares.js'
 
 export async function getCommentsByProduct(req: Request, res: Response){

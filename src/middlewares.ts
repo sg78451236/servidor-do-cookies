@@ -2,7 +2,7 @@ import type { PostgrestError } from "@supabase/supabase-js";
 import type { NextFunction, Request, Response, ErrorRequestHandler, RequestHandler} from "express";
 import jwt, { type JwtPayload } from 'jsonwebtoken'
 
-import type { DTOUser } from "./dto.js";
+import type { DTOUser } from './shared/dto.js'
 import { jwtkey } from "./routes/auth.js";
 // ??? magica pro typescript aceitar modificar req
 declare global {

@@ -4,7 +4,7 @@ import { notFound } from '../middlewares.js'
 import jwt from 'jsonwebtoken'
 import { userCreate, userGet } from '../db_reqs.js'
 
-import type { DTOUser } from '../dto.js'
+import type { DTOUser } from '../shared/dto.js'
 
 export const jwtkey = "chavealeatoriaabalabala"
 const router = express.Router()

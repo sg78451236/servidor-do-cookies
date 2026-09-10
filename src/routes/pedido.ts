@@ -1,5 +1,5 @@
 import express from 'express'
-import type { DTOPedido, DTOProduto } from '../dto.js'
+import type { DTOPedido, DTOProduto } from '../shared/dto.js'
 import { createPedido, getPedidoById, getPedidosByUser } from '../db_reqs.js'
 import { Tables } from '../db_to_dto.js'
 import { idsToDBRow, queryProductsIdOnly, userHasOrderPending } from '../util.js'

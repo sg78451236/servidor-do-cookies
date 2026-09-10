@@ -1,6 +1,4 @@
 import { createClient, type PostgrestFilterBuilder, type PostgrestResponse } from "@supabase/supabase-js";
-// import { createClient } from "../node_modules/@supabase/supabase-js/dist/index.cjs";
-import type {  DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js"
 import { errorPostgres } from "./middlewares.js";
 
 import type { Database } from "./supabase.js";
