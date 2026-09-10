@@ -45,7 +45,7 @@ export const handlerUser: RequestHandler = (req, res, next) => {
   req.isGuest = true
   const verify = jwt.verify(token, jwtkey, (err, decoded) => {
     if (err){
-      return res.status(401).json({})
+      return res.status(401).json({error: err.message})
     }
     req.isGuest = false
     console.log("not guest")

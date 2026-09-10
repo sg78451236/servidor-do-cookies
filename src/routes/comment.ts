@@ -6,8 +6,9 @@ import { handlerLogged, handlerUser } from '../middlewares.js'
 
 export async function getCommentsByProduct(req: Request, res: Response){
   const { id } = req.params
+  if (!id) return res.status(400).json({error: "id do produto não foi determinado"});
   console.log('comments id product', id)
-  let comments = await commentGet(id)
+  let comments = await commentGet(id as string)
   // TODO: set usernames
 
   res.json({comments: comments})

@@ -1,10 +1,10 @@
 import express from 'express'
-import { produtoDbToDTO, supabase } from '../db.js'
+import { supabase } from '../db.js'
 import { qrcodedynamic } from '../asaas.js'
 import { errorPostgres, notFound } from '../middlewares.js'
 import type { DTOPedido, DTOProduto } from '../dto.js'
 import { createPedido, getPedidoById, getPedidosByUser, getProdutoById } from '../db_reqs.js'
-import { Tables } from '../db_to_dto.js'
+import { produtoDbToDTO, Tables } from '../db_to_dto.js'
 
 
 const validateProdutos = async (produtosId: string[]): Promise<DTOProduto[]> => {
@@ -28,20 +28,48 @@ const validateProdutos = async (produtosId: string[]): Promise<DTOProduto[]> => 
 
 const router = express.Router()
 
+router.get('/:id', async (req, res) => {
+  const { productsIdOnly } = req.query
+  let {id} = req.params
+  console.log("pedido id", id, "id only", productsIdOnly)
+  let pedido: DTOPedido<string> | null;
+  let pedido_result: DTOPedido<string | DTOProduto>;
+  try {
+    pedido = await getPedidoById(id)
+  } catch (e){
+    return res.json({error: e})
+  }
+  if (!pedido){
+    return res.json({error: "pedido não existe"})
+  }
+  pedido_result = pedido;
+  if (productsIdOnly){
+    pedido_result = await setPedidoProducts(pedido)
+  }
+  console.log("pedido user", pedido.user, req.user.email)
+  if (pedido.user != req.user.email) {
+    return res.json({error: "usuário não é dono do pedido"})
+
+  }
+  return res.json({pedido: pedido_result})
+
+})
+async function setPedidoProducts(pedido: DTOPedido<string>) {
+    return {
+      ...pedido,
+      products: (await Promise.all(
+	pedido.products.map(id => getProdutoById(id))
+      )).filter(p => p !== null)
+    }
+}
 router.get('/', async (req, res) => {
   const { productsIdOnly } = req.query
+  console.log("user", req.user)
   let meuspedidos: DTOPedido<string>[] | DTOPedido<DTOProduto>[] = await getPedidosByUser(req.user.email) 
  
   if (productsIdOnly === "false"){
     meuspedidos = await Promise.all(
-      meuspedidos.map(async pedido => {
-	console.log("meu pedido", pedido);
-	return {
-        ...pedido,
-        products: (await Promise.all(
-          pedido.products.map(id => getProdutoById(id))
-        )).filter(p => p !== null)
-      }})
+      meuspedidos.map(async pedido => setPedidoProducts(pedido))
     )
 
   }

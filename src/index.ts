@@ -14,7 +14,7 @@ app.use(cors({ origin: "*"}));
 app.use(express.json())
 // FIXME: Não ta identificando o pedido certo, só pega o primeiro da lista (não da pra pagar outro pedido alem do primeiro)
 
-app.use('/order', handlerUser, routerPedido)
+app.use('/order', handlerUser, handlerLogged, routerPedido)
 app.use('/auth', routerAuth)
 app.use('/product', routerProduto)
 app.get('/product/:id/comment', getCommentsByProduct)
