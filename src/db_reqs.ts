@@ -1,5 +1,5 @@
 import { dbGet, supabase } from "./db.js";
-import { Tables, type TableInsert } from "./db_to_dto.js";
+import { Tables, type TableInsert, type TableRow } from "./db_to_dto.js";
 import type { DTOComment, DTOPedido, DTOProduto, DTOUser } from "./dto.js";
 import { errorPostgres } from "./middlewares.js";
 
@@ -9,18 +9,27 @@ export async function getProdutoById(id: string): Promise<DTOProduto | null>{
   return data[0] ?? null
 
 }
+export async function createProduto(produto: TableInsert<"cookie">) {
+
+  const {data, error} = await supabase.from(Tables.cookie).insert(produto)
+  if (error) return errorPostgres(error);
+}
 export async function getPedidosByUser(email: string): Promise<DTOPedido<string>[]>{
   return await dbGet('order', (q) => q.eq("user", email)) as DTOPedido<string>[]
   
   
+}
+export async function getProdutos(){
+  const produtos = dbGet('comment')
+  return produtos
 }
 export async function getPedidoById(id: string){
   const data = await dbGet('order', (q) => q.eq('id', id))
   if (data.length == 0) return null
   return data[0] as DTOPedido<string>
 }
-export async function createPedido(produtos: DTOProduto[], user: string){
-  const row = {products: produtos.map((v) => v.id), user: user}
+export async function createPedido(produtos_id: string[], user: string){
+  const row = {products: produtos_id, user: user}
   console.log("create order", row);
   const {data, error} = await supabase.from(Tables.order).insert(row)
   if (error) return errorPostgres(error);
@@ -53,3 +62,4 @@ export async function commentCreate(comment: DTOComment){
   const {data, error} = await supabase.from(Tables.comment).insert(row)
   if (error) return errorPostgres(error)
 }
+
