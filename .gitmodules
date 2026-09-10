@@ -1,6 +1,3 @@
-[submodule "cuquis-shared"]
-	path = cuquis-shared
-	url = git@github.com:grefano/cuquis-shared.git
 [submodule "src/shared"]
 	path = src/shared
 	url = git@github.com:grefano/cuquis-shared.git
